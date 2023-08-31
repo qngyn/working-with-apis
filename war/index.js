@@ -9,39 +9,38 @@ const remainingText = document.getElementById("remaining")
 const computerScoreEl = document.getElementById("computer-score")
 const myScoreEl = document.getElementById("my-score")
 
-function newCard() {
-    fetch("https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1")
-        .then(res => res.json())
-        .then(data => {
-            deckId = data.deck_id
-            remainingText.textContent = `Remaining cards: ${data.remaining}`
-        })
+async function newDeck() {
+    const res = await fetch("https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1")
+    const data = await res.json()
+    deckId = data.deck_id
+    remainingText.textContent = `Remaining cards: ${data.remaining}`
 }
-newDeckBtn.addEventListener("click", newCard)
 
-drawCardBtn.addEventListener("click", () => {
-    fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=2`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.remaining >= 0) {
-                remainingText.textContent = `Remaining cards: ${data.remaining}`
-                const card1 = data.cards[0]
-                const card2 = data.cards[1]
-                cardsContainer.children[0].innerHTML = `<img src = ${card1.image} class = card />`
-                cardsContainer.children[1].innerHTML = `<img src = ${card2.image} class = card />`
-                header.textContent = getCardWinner(card1, card2)
-            } else {
-                drawCardBtn.disabled = true; 
-                if (computerScore > myScore) {
-                    header.textContent = "Computer wins!"
-                } else if (computerScore < myScore) {
-                    header.textContent = "You Win!"
-                } else {
-                    header.textContent = "It's a tie!"
-                }
-            }
-        })
-})
+newDeckBtn.addEventListener("click", newDeck)
+
+async function drawNewCard() {
+    const res = await fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=2`)
+    const data = await res.json()
+    if (data.remaining >= 0) {
+        remainingText.textContent = `Remaining cards: ${data.remaining}`
+        const card1 = data.cards[0]
+        const card2 = data.cards[1]
+        cardsContainer.children[0].innerHTML = `<img src = ${card1.image} class = card />`
+        cardsContainer.children[1].innerHTML = `<img src = ${card2.image} class = card />`
+        header.textContent = getCardWinner(card1, card2)
+    } else {
+        drawCardBtn.disabled = true; 
+        if (computerScore > myScore) {
+            header.textContent = "Computer wins!"
+        } else if (computerScore < myScore) {
+            header.textContent = "You Win!"
+        } else {
+            header.textContent = "It's a tie!"
+        }
+    }
+}
+
+drawCardBtn.addEventListener("click", drawNewCard)
 
 function getCardWinner(card1, card2) {
     const cardValue = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "JACK", "QUEEN", "KING", "ACE"]
